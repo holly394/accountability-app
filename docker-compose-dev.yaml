@@ -1,0 +1,6 @@
+services:
+  accountability-app:
+    container_name: accountability-app
+    build: .
+    ports:
+      - "5000:5000"
