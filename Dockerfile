@@ -6,8 +6,8 @@ RUN pip install -r /reqs/requirements.txt
 
 RUN mkdir /app
 COPY . /app
-RUN rm -r /app/flask_session
-RUN rm -r /app/.venv
+RUN rm -rf /app/flask_session || true
+RUN rm -rf /app/.venv || true
 
 WORKDIR /app
 
