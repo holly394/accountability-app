@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}
+{% endblock %}
+
+{% block main %}
+
+    <form action="/findpartner" method="post">
+        <input autocomplete="off" autofocus placeholder="Enter partner username" id="partnerName" name = "partnerName" type="text">
+        <input type="submit" id="search" value="Search"/>
+    </form>
+
+<tbody>
+<br><br>
+
+    {% if found == 0 %}
+        {{ partners }}
+    {% endif %}
+
+    {% if found == 1 %}
+        {% for partner in partners %}
+            <form action="/addpartner" method="post">
+                <p>Found {{ partner }}.</p>
+                <input type="hidden" id="found_partner" name="found_partner" value="{{ partner }}" />
+                <input type="submit" id="add" name="add" value="Request partnership?"/>
+            </form>
+        {% endfor %}
+    {% endif %}
+
+</tbody>
+{% endblock %}

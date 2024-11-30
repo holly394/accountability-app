@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+
+{% block title %}
+{% endblock %}
+
+{% block main %}
+<table class="table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Username</th>
+        <th scope="col">Status</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+      {% set count = namespace(c=0) %}
+      {% for partner in requestedpartnerList %}
+      <tr>
+        {% set count.c = count.c + 1 %}
+            <td>{{ count.c }}</td>
+            <td>{{ partner.username }}</td>
+              {% if partner.status == "REQUESTED" %}
+                <td>{{partner.status}}</td>
+                <td>Wait</td>
+              {% elif partner.status == "ACCEPTED" %}
+                <td>{{partner.status}}</td>
+                <td>None</td>
+              {% elif partner.status == "DENIED" %}
+                <td>DENIED BY {{ partner.username }}</td>
+                <td>None</td>
+              {% endif %}
+
+      </tr>
+      {% endfor %}
+      </tr>
+      <tr>
+      {% for partner in acceptedpartnerList %}
+      <tr>
+        {% set count.c = count.c + 1 %}
+          <td>{{ count.c }}</td>
+          <td>{{ partner.username }}</td>
+          <td>{{ partner.status }}</td>
+          {% if partner.status == "REQUESTED" %}
+            <td><form action="/acceptpartnershiprequest" method="post">
+              <input type="hidden" id="partner_name" name="partner_name" value="{{ partner.username }}"/>
+              <input type="submit" id="accept" name="accept" value="Accept request?"/>
+            </form></td>
+            <td><form action="/denypartnershiprequest" method="post">
+              <input type="hidden" id="partner_name" name="partner_name" value="{{ partner.username }}"/>
+              <input type="submit" id="deny" name="deny" value="Deny request?"/>
+            </form></td>
+          {% elif partner.status == "ACCEPTED" %}
+            <td>None</td>
+          {% elif partner.status == "DENIED" %}
+          <td><form action="/undopartnershipdenial" method="post">
+            <input type="hidden" id="partner_name" name="partner_name" value="{{ partner.username }}"/>
+            <input type="submit" id="undo_deny" name="undo_deny" value="Undo denial?"/>
+          </form></td>
+          {% endif %}
+      </tr>
+      {% endfor %}
+      </tr>
+    </tbody>
+  </table>
+{% endblock %}
+
+<script>
+
+</script>

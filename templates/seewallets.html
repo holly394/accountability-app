@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% block title %}
+See wallets of your partners
+{% endblock %}
+
+{% block main %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Partners</th>
+            <th scope="col">Wallets</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for partner in partnerList %}
+            <tr>
+            <td>{{ partner | find_username }}</td>
+            <td>{{ partner | find_wallet }} euro</td>
+            </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+
+
+
+{% endblock %}

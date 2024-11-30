@@ -1,0 +1,64 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Your wishlist
+{% endblock %}
+
+{% block main %}
+<table class = "table">
+    <thead>
+        <tr>
+            <th>
+                Item
+            </th>
+            <th>
+                Price
+            </th>
+            <th>
+                Status
+            </th>
+            <th>
+                Action
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for wish in wishes %}
+        <tr>
+            <td>
+                {{ wish.wishDescription }}
+            </td>
+            <td>
+                {{ wish.price }}
+            </td>
+            <td>
+                {{ wish.wishStatus }}
+            </td>
+            <td>
+                {% if wallet > wish.price and wish.wishStatus == "LISTED" %}
+                <form action="/purchaseitem" method="post">
+                    <input type="hidden" id="wishId" name="wishId" value="{{ wish.wish_id }}"/>
+                    <input type="hidden" id="wishPrice" name="wishPrice" value="{{ wish.price }}"/>
+                    <button class="btn btn-primary" type="submit">Purchase item?</button>
+                </form>
+                {% elif wish.wishStatus == "PURCHASED" %}
+                Already purchased
+                {% else %}
+                Not enough funds
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<form action="/addwish" method="post">
+    <div class="mb-3">
+        <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="newWish" id="newWish" placeholder="Enter item" type="text">
+        <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="wishprice" id="wishprice" placeholder="Enter price" type="text">
+    </div>
+    <button class="btn btn-primary" type="submit">Add to wishlist</button>
+</form>
+
+
+{% endblock %}

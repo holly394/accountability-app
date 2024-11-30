@@ -1,0 +1,42 @@
+@app.route("/managegoals", methods=["GET", "POST"])
+@login_required
+def managegoal():
+    """Manage your goals (completion status, time spent)"""
+    goalList = find_goals()
+    planned = "PLANNED"
+    inProgress = "IN PROGRESS"
+    completed = "COMPLETED"
+
+    return render_template("managegoals.html", goals = goalList, planned = planned, inProgress = inProgress, completed = completed)
+
+
+@app.route("/startgoal", methods=["GET", "POST"])
+@login_required
+def startgoal():
+    goalList = find_goals()
+    if request.method == "POST":
+        goalId = request.form.get("task_id")
+        planned = "PLANNED"
+        inProgress = "IN PROGRESS"
+        completed = "COMPLETED"
+
+        db.execute("""
+                UPDATE goals SET completionStatus = ? WHERE goal_id = ?
+                """, inProgress, goalId)
+    return render_template("managegoals.html", goals = goalList, planned = planned, inProgress = inProgress, completed = completed)
+
+
+@app.route("/endgoal", methods=["GET", "POST"])
+@login_required
+def endgoal():
+    goalList = find_goals()
+    if request.method == "POST":
+        goalId = request.form.get("task_id")
+        planned = "PLANNED"
+        inProgress = "IN PROGRESS"
+        completed = "COMPLETED"
+
+        db.execute("""
+                UPDATE goals SET completionStatus = ? WHERE goal_id = ?
+                """, completed, goalId)
+    return render_template("managegoals.html", goals = goalList, planned = planned, inProgress = inProgress, completed = completed)

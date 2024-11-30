@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Make a goal
+{% endblock %}
+
+{% block main %}
+
+<table class = "table">
+    <thead>
+        <tr>
+            <th>
+                Goal
+            </th>
+            <th>
+                Completion status
+            </th>
+            <th>
+                Acceptance status
+            </th>
+            <th>
+                Start time
+            </th>
+            <th>
+                End time
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for goal in goals %}
+        <tr>
+            <td>
+                {{ goal.goalDescription }}
+            </td>
+            <td>
+                {{ goal.completionStatus }}
+            </td>
+            <td>
+                {{ goal.acceptanceStatus }}
+            </td>
+            <td>
+                {{ goal.timeStart }}
+            </td>
+            <td>
+                {{ goal.timeEnd }}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+<form action="/makegoal" method="post">
+    <div class="mb-3">
+        <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="goalDescription" placeholder="What's your goal?" type="text">
+    </div>
+    <button class="btn btn-primary" type="submit">Submit goal</button>
+</form>
+{% endblock %}
