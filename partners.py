@@ -1,8 +1,7 @@
-import requests
+
 
 from cs50 import SQL
-from flask import redirect, render_template, session
-from functools import wraps
+
 db = SQL("sqlite:///projectdata.db")
 
 
@@ -33,14 +32,12 @@ def acceptee_partners(userid):
                                 SELECT * FROM partnerships JOIN accounts
                                 ON partnerships.requester = accounts.id
                                 WHERE acceptee = ?
-                                    """, userid)
+                                """, userid)
     return acceptedPartnerships
 
 def search_by_username(username):
-    searchName = db.execute("""
-                    SELECT * FROM accounts WHERE username = ?
-                   """, username)
-    return searchName
+    person = db.execute("SELECT * FROM accounts WHERE username = ?", username)
+    return person
 
 def search_requester_acceptee(requester, acceptee):
     relationship = db.execute("""

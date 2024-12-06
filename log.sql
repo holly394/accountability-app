@@ -39,3 +39,5 @@ CREATE TABLE wishlist (
     wishStatus TEXT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES accounts(id)
 );
+
+SELECT * FROM goals;

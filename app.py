@@ -1,8 +1,9 @@
 import os
+from xml.etree.ElementTree import tostring
 
 from cs50 import SQL
 import sqlite3
-from flask import Flask, flash, redirect, render_template, request, session
+from flask import Flask, flash, redirect, render_template, request, session, jsonify
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -104,7 +105,7 @@ def register():
             INSERT INTO accounts (username, hash)
             VALUES(?, ?)
                 """, username, generate_password_hash(password))
-        return redirect("/register")
+        return redirect("/login")
     return render_template("register.html")
 
 @app.route("/makegoal", methods=["GET", "POST"])
@@ -164,11 +165,12 @@ def tryagain():
             return redirect("/managegoals")
         goalId = request.form.get("task_id")
         db.execute("""
-                    UPDATE goals SET completionStatus = ?, acceptanceStatus = ?, timeStart = ?, timeEnd = ? WHERE goal_id = ?
+                    UPDATE goals SET completionStatus = ?, acceptanceStatus = ?, timeStart = ?, timeEnd = ? 
+                    WHERE goal_id = ?
                    """, "PLANNED", "NOT ACCEPTED", 0, 0, goalId)
     return redirect("/managegoals")
 
-@app.route("/deletegoal", methods=["GET", "POST"])
+@app.route("/deletegoal", methods=["POST"])
 @login_required
 def deletegoal():
     if request.method == "POST":
@@ -181,78 +183,57 @@ def deletegoal():
                    """, goalId)
     return redirect("/managegoals")
 
-@app.route("/findpartner", methods=["GET", "POST"])
+@app.route("/findpartner")
 @login_required
 def findpartner():
-    """Find a partner!"""
-    searchResult = []
-    if request.method == "POST":
-        partnerName = request.form.get("partnerName")
-        partnerFound = 0
-        """if there is no username entered"""
-        if not partnerName:
-            return apology("no username entered", 401)
-        if partnerName == session["user_name"]:
-            return apology("this is current user", 401)
-        """if username is entered, we search for it"""
-        partnerSearch = search_by_username(partnerName)
-        """go through database for possible matches."""
-        for partner in partnerSearch:
-            partnerUsername = partner["username"]
-            if partnerUsername == partnerName:
-                partnerFound = 1
-                searchResult.append(partner)
-        if partnerFound == 0:
-            return render_template("findpartner.html", found = 0, partners = "PARTNER NOT FOUND")
-        if partnerFound == 1:
-            usernameList = []
-            for name in searchResult:
-                user = name["username"]
-                usernameList.append(user)
-            return render_template("findpartner.html", found = 1, partners = usernameList)
-    return render_template("findpartner.html", partners = searchResult)
+    return render_template("/findpartner.html")
 
+@app.route("/searchpartner")
+def search():
+    SearchName = request.args.get("p")
+    if SearchName:
+        partners = db.execute("""SELECT * FROM accounts WHERE username LIKE ?
+                                    AND NOT (username IN (?)) """,
+                              "%" + str(SearchName) + "%", session["user_name"])
+    else:
+        partners = []
+    return jsonify(partners)
 
 @app.route("/addpartner", methods=["GET", "POST"])
 @login_required
 def addpartner():
     message=""
     if request.method == "POST":
-        addPartner = request.form.get("add")
         foundPartner = request.form.get("found_partner")
-        if not addPartner:
+        if not foundPartner:
             return redirect("/findpartner")
-        PartnerInfo = search_by_username(foundPartner)
-        for person in PartnerInfo:
-            existingRequest = search_requester_acceptee(session["user_id"], person["id"])
-            # if there is an existing request (there's a result from partnerships table), so more than 0.
-            if len(existingRequest) > 0:
-                existingStatus = existingRequest[0]
-                statusRequester = existingStatus["status"]
-                message = partner_message(statusRequester, 0)
-                return render_template("addpartner.html", message = message)
-            requestToRespond = search_requester_acceptee(person["id"], session["user_id"])
-            if len(requestToRespond) > 0:
-                toRespond = requestToRespond[0]
-                statusResponder = toRespond["status"]
-                message = partner_message(statusResponder, 1)
-                return render_template("addpartner.html", message = message)
-            db.execute("""
-                    INSERT INTO partnerships (requester, acceptee, status)
-                    VALUES (?, ?, ?)
-                    """, session["user_id"], person["id"], "REQUESTED")
-
-            message = "Partnership requested."
+        # check if there is an existing request or partnership
+        existingRequest = search_requester_acceptee(session["user_id"], foundPartner)
+        if len(existingRequest) > 0:
+            existingStatus = existingRequest[0]
+            statusRequester = existingStatus["status"]
+            message = partner_message(statusRequester, 0)
             return render_template("addpartner.html", message = message)
-    return redirect("/findpartner", message = message)
+        requestToRespond = search_requester_acceptee(foundPartner, session["user_id"])
+        if len(requestToRespond) > 0:
+            toRespond = requestToRespond[0]
+            statusResponder = toRespond["status"]
+            message = partner_message(statusResponder, 1)
+            return render_template("addpartner.html", message = message)
+        db.execute("""INSERT INTO partnerships (requester, acceptee, status) 
+                    VALUES (?, ?, ?)""",
+                   session["user_id"], foundPartner, "REQUESTED")
+        message = "Partnership requested."
+        return render_template("addpartner.html", message = message)
+    return render_template("/addpartner.html", message = message)
 
 @app.route("/partnerlist")
 @login_required
 def partnerlist():
-    """Show list of partnerships"""
     requestedPartnerships = requested_partners(session["user_id"])
     acceptedPartnerships = acceptee_partners(session["user_id"])
-    return render_template("partnerlist.html", requestedpartnerList = requestedPartnerships, acceptedpartnerList = acceptedPartnerships)
+    return render_template("partnerlist.html", requestedpartnerList = requestedPartnerships,
+                           acceptedpartnerList = acceptedPartnerships)
 
 @app.route("/acceptpartnershiprequest", methods=["GET", "POST"])
 @login_required

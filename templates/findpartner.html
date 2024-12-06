@@ -1,31 +1,57 @@
 {% extends "layout.html" %}
 
 {% block title %}
+<title>partners</title>
 {% endblock %}
 
 {% block main %}
+<input autocomplete="off" autofocus placeholder="Enter partner username" type="text">
+<br>
 
-    <form action="/findpartner" method="post">
-        <input autocomplete="off" autofocus placeholder="Enter partner username" id="partnerName" name = "partnerName" type="text">
-        <input type="submit" id="search" value="Search"/>
-    </form>
+<p></p>
 
-<tbody>
-<br><br>
+<script>
+    let input = document.querySelector('input');
+    input.addEventListener('input', async function() {
+        let response = await fetch('/searchpartner?p=' + input.value);
+        let partners = await response.json();
+        let html = '';
+        for (let id in partners) {
+            let username = partners[id].username;
+            let idvalue = partners[id].id;
+            html += 'Found ' + username + '.' + '<br>'
+            + '<form action="/addpartner" method="post">'
+            + '<button type="submit"' + 'id="found_partner"'
+            + 'name="found_partner"' + 'value='
+            + '"' + idvalue + '"'
+            + '>' + 'Request partnership?' + '</button>'
+            + '</form>'
+            + '<br>';
+        }
+        document.querySelector('p').innerHTML = html;
+    });
 
-    {% if found == 0 %}
-        {{ partners }}
-    {% endif %}
-
-    {% if found == 1 %}
-        {% for partner in partners %}
-            <form action="/addpartner" method="post">
-                <p>Found {{ partner }}.</p>
-                <input type="hidden" id="found_partner" name="found_partner" value="{{ partner }}" />
-                <input type="submit" id="add" name="add" value="Request partnership?"/>
-            </form>
-        {% endfor %}
-    {% endif %}
-
-</tbody>
+</script>
 {% endblock %}
+
+
+<!--
+<form action="/findpartner" method="get">
+    <input autocomplete="off" autofocus placeholder="Enter partner username" id="p" name = "p" type="text">
+    <button type="submit">Search</button>
+</form>
+
+<br><br>
+{% for partner in partners %}
+{% if partner.username != session["user_name"] %}
+<form action="/addpartner" method="post">
+    Found {{ partner.username }}.
+    <button type="submit" id="found_partner" name="found_partner" value="{{ partner.id }}">Request partnership?</button>
+</form>
+{% endif %}
+<br>
+{% endfor %}
+-->
+
+
+

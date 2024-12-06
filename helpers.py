@@ -30,7 +30,6 @@ def apology(message, code=400):
 def login_required(f):
     """
     Decorate routes to require login.
-
     https://flask.palletsprojects.com/en/latest/patterns/viewdecorators/
     """
 
@@ -39,7 +38,6 @@ def login_required(f):
         if session.get("user_id") is None:
             return redirect("/login")
         return f(*args, **kwargs)
-
     return decorated_function
 
 def find_username(value):
