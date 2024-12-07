@@ -199,33 +199,41 @@ def search():
         partners = []
     return jsonify(partners)
 
-@app.route("/addpartner", methods=["GET", "POST"])
+@app.route("/addpartner-json", methods=["POST"])
 @login_required
-def addpartner():
-    message=""
-    if request.method == "POST":
-        foundPartner = request.form.get("found_partner")
-        if not foundPartner:
-            return redirect("/findpartner")
-        # check if there is an existing request or partnership
-        existingRequest = search_requester_acceptee(session["user_id"], foundPartner)
-        if len(existingRequest) > 0:
-            existingStatus = existingRequest[0]
-            statusRequester = existingStatus["status"]
-            message = partner_message(statusRequester, 0)
-            return render_template("addpartner.html", message = message)
-        requestToRespond = search_requester_acceptee(foundPartner, session["user_id"])
-        if len(requestToRespond) > 0:
-            toRespond = requestToRespond[0]
-            statusResponder = toRespond["status"]
-            message = partner_message(statusResponder, 1)
-            return render_template("addpartner.html", message = message)
-        db.execute("""INSERT INTO partnerships (requester, acceptee, status) 
-                    VALUES (?, ?, ?)""",
-                   session["user_id"], foundPartner, "REQUESTED")
-        message = "Partnership requested."
-        return render_template("addpartner.html", message = message)
-    return render_template("/addpartner.html", message = message)
+def addpartnerJson():
+    content = request.get_json()
+    foundPartner = content["id"]
+
+    if not foundPartner:
+        return redirect("/findpartner")
+
+    # check if there is an existing request or partnership
+    existingRequest = search_requester_acceptee(session["user_id"], foundPartner)
+    if len(existingRequest) > 0:
+        existingRelationship = existingRequest[0]
+        return jsonify({
+            "status": existingRelationship["status"],
+            "message": partner_message(existingRelationship["status"], 0)
+        })
+
+    requestToRespond = search_requester_acceptee(foundPartner, session["user_id"])
+    if len(requestToRespond) > 0:
+        responder = requestToRespond[0]
+        return jsonify({
+            "status": responder["status"],
+            "message": partner_message(responder["status"], 1)
+        })
+
+    db.execute("""INSERT INTO partnerships (requester, acceptee, status) 
+                VALUES (?, ?, ?)""",
+               session["user_id"], foundPartner, "REQUESTED")
+
+    return jsonify({
+        "status": "REQUESTED",
+        "message": "Partnership requested."
+    })
+
 
 @app.route("/partnerlist")
 @login_required

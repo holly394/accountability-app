@@ -19,17 +19,43 @@
         for (let id in partners) {
             let username = partners[id].username;
             let idvalue = partners[id].id;
+
             html += 'Found ' + username + '.' + '<br>'
-            + '<form action="/addpartner" method="post">'
-            + '<button type="submit"' + 'id="found_partner"'
-            + 'name="found_partner"' + 'value='
-            + '"' + idvalue + '"'
-            + '>' + 'Request partnership?' + '</button>'
-            + '</form>'
+            + '<button class="add-partner-action"' + 'partner-id=' + '"' + idvalue + '"' + '>'
+            + 'Request partnership?' + '</button>'
             + '<br>';
         }
         document.querySelector('p').innerHTML = html;
+        createButtonClickListeners()
     });
+
+    function createButtonClickListeners() {
+        document
+        .querySelectorAll('.add-partner-action')
+        .forEach(button => {
+            button.addEventListener('click', async function(event) {
+                let actionButton = this;
+                let partnerId = actionButton.getAttribute('partner-id');
+
+                let response = await fetch('/addpartner-json', {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        "id": partnerId,
+                    })
+                });
+
+                let serverJson = await response.json()
+                actionButton.innerHTML = serverJson.message
+                //actionButton.removeEventListener('click')
+
+            });
+        });
+    }
+
+
 
 </script>
 {% endblock %}
