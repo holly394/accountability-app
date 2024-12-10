@@ -190,7 +190,7 @@ def findpartner():
 
 @app.route("/searchpartner")
 def search():
-    SearchName = request.args.get("p")
+    SearchName = request.args.get("searchname")
     if SearchName:
         partners = db.execute("""SELECT * FROM accounts WHERE username LIKE ?
                                     AND NOT (username IN (?)) """,
@@ -210,7 +210,7 @@ def addpartnerJson():
 
     # check if there is an existing request or partnership
     existingRequest = search_requester_acceptee(session["user_id"], foundPartner)
-    if len(existingRequest) > 0:
+    if existingRequest:
         existingRelationship = existingRequest[0]
         return jsonify({
             "status": existingRelationship["status"],
@@ -218,7 +218,7 @@ def addpartnerJson():
         })
 
     requestToRespond = search_requester_acceptee(foundPartner, session["user_id"])
-    if len(requestToRespond) > 0:
+    if requestToRespond:
         responder = requestToRespond[0]
         return jsonify({
             "status": responder["status"],
@@ -234,59 +234,63 @@ def addpartnerJson():
         "message": "Partnership requested."
     })
 
-
 @app.route("/partnerlist")
 @login_required
 def partnerlist():
+    return render_template("partnerlist.html")
+
+@app.route("/requestedpartnerlist-json")
+@login_required
+def requestedpartnerlistjson():
     requestedPartnerships = requested_partners(session["user_id"])
-    acceptedPartnerships = acceptee_partners(session["user_id"])
-    return render_template("partnerlist.html", requestedpartnerList = requestedPartnerships,
-                           acceptedpartnerList = acceptedPartnerships)
+    return jsonify(requestedPartnerships)
 
-@app.route("/acceptpartnershiprequest", methods=["GET", "POST"])
+@app.route("/acceptedpartnerlist-json")
 @login_required
-def acceptpartnershiprequest():
-    if request.method == "POST":
-        acceptRequest = request.form.get("accept")
-        if not acceptRequest:
-            return redirect("/partnerlist")
-        requestName = request.form.get("partner_name")
-        requestId = find_idNumber(requestName)
-        db.execute("""
-                    UPDATE partnerships SET status = ? WHERE requester = ? AND acceptee = ?
-                    """, "ACCEPTED", requestId, session["user_id"])
+def accepteepartnerlistjson():
+    toAcceptPartnerships = acceptee_partners(session["user_id"])
+    return jsonify(toAcceptPartnerships)
+
+@app.route("/acceptpartnershiprequest-json", methods=["POST"])
+@login_required
+def acceptpartnershiprequestjson():
+    response = request.get_json()
+    acceptRequest = response["id"]
+    if not acceptRequest:
         return redirect("/partnerlist")
-
-@app.route("/denypartnershiprequest", methods=["GET", "POST"])
+    db.execute("""
+                UPDATE partnerships SET status = ? WHERE requester = ? AND acceptee = ?
+                """, "ACCEPTED", acceptRequest, session["user_id"])
+    return jsonify({
+        "message": "Accepted partnership."
+    })
+@app.route("/denypartnershiprequest-json", methods=["GET", "POST"])
 @login_required
-def denypartnershiprequest():
-    if request.method == "POST":
-        acceptRequest = request.form.get("deny")
-        if not acceptRequest:
-            return redirect("/partnerlist")
-        requestName = request.form.get("partner_name")
-        requestId = find_idNumber(requestName)
-        db.execute("""
-                    UPDATE partnerships SET status = ? WHERE requester = ? AND acceptee = ?
-                    """, "DENIED", requestId, session["user_id"])
-    return redirect("/partnerlist")
-
-
-@app.route("/undopartnershipdenial", methods=["GET", "POST"])
-@login_required
-def undopartnershipdenial():
-    if request.method == "POST":
-        undoDenial = request.form.get("undo_deny")
-        if not undoDenial:
-            return redirect("/partnerlist")
-        deniedName = request.form.get("partner_name")
-        deniedIdNumber = find_idNumber(deniedName)
-        db.execute("""
-                    DELETE FROM partnerships WHERE requester = ? AND acceptee = ?
-                   """, deniedIdNumber, session["user_id"])
+def denypartnershiprequestjson():
+    response = request.get_json()
+    denyRequest = response["id"]
+    if not denyRequest:
         return redirect("/partnerlist")
-    return redirect("/partnerlist")
+    db.execute("""
+                UPDATE partnerships SET status = ? WHERE requester = ? AND acceptee = ?
+                """, "DENIED", denyRequest, session["user_id"])
+    return jsonify({
+        "message": "Denied partnership."
+    })
 
+@app.route("/undopartnershipdenial-json", methods=["GET", "POST"])
+@login_required
+def undopartnershipdenialjson():
+    response = request.get_json()
+    undoDenial = response["id"]
+    if not undoDenial:
+        return redirect("/partnerlist")
+    db.execute("""
+                DELETE FROM partnerships WHERE requester = ? AND acceptee = ?
+               """, undoDenial, session["user_id"])
+    return jsonify({
+        "message": "Erased denial."
+    })
 
 @app.route("/seePartnerGoals", methods=["GET", "POST"])
 @login_required

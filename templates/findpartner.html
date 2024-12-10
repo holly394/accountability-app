@@ -5,15 +5,15 @@
 {% endblock %}
 
 {% block main %}
-<input autocomplete="off" autofocus placeholder="Enter partner username" type="text">
+<input autocomplete="off" class="typedName" autofocus placeholder="Enter partner username" type="text">
 <br>
 
 <p></p>
 
 <script>
-    let input = document.querySelector('input');
-    input.addEventListener('input', async function() {
-        let response = await fetch('/searchpartner?p=' + input.value);
+    let name = document.querySelector('.typedName');
+    name.addEventListener('input', async function() {
+        let response = await fetch('/searchpartner?searchname=' + name.value);
         let partners = await response.json();
         let html = '';
         for (let id in partners) {
@@ -47,21 +47,19 @@
                     })
                 });
 
-                let serverJson = await response.json()
-                actionButton.innerHTML = serverJson.message
-                //actionButton.removeEventListener('click')
-
+                let serverJson = await response.json();
+                actionButton.innerHTML = serverJson.message;
+                actionButton.disabled = true;
             });
         });
     }
-
-
 
 </script>
 {% endblock %}
 
 
 <!--
+
 <form action="/findpartner" method="get">
     <input autocomplete="off" autofocus placeholder="Enter partner username" id="p" name = "p" type="text">
     <button type="submit">Search</button>
