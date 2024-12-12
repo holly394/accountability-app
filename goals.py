@@ -12,8 +12,9 @@ def find_goals(value):
     return goalList
 
 def add_goal(id, goal):
-    addGoal = db.execute("""
+    db.execute("""
                 INSERT INTO goals (user_id, goalDescription, completionStatus, acceptanceStatus, timeStart, timeEnd)
                 VALUES (?, ?, ?, ?, ?, ?)
                 """, id, goal, "PLANNED", "NOT ACCEPTED", 0, 0)
-    return addGoal
+    return True
+

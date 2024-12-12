@@ -108,80 +108,58 @@ def register():
         return redirect("/login")
     return render_template("register.html")
 
-@app.route("/makegoal", methods=["GET", "POST"])
+@app.route("/makegoal")
 @login_required
 def makegoal():
-    """Make a goal for yourself"""
-    goalList = find_goals(session["user_id"])
-    if request.method == "POST":
-        goalDescription = request.form.get("goalDescription")
-        if not goalDescription:
-            return apology("Must provide a goal", 400)
-        add_goal(session["user_id"], goalDescription)
-        return redirect("/managegoals")
-    return render_template("makegoal.html", goals = goalList)
+    return render_template("makegoal.html")
 
-@app.route("/managegoals")
+@app.route("/mygoals-json")
 @login_required
-def managegoal():
+def mygoalsjson():
     goalList = find_goals(session["user_id"])
-    return render_template("managegoals.html", goals = goalList)
+    return jsonify(goalList)
 
-@app.route("/startgoal", methods=["GET", "POST"])
+@app.route("/addgoal", methods=["POST"])
 @login_required
-def startgoal():
-    if request.method == "POST":
-        startbutton = request.form.get("startbutton")
-        if not startbutton:
-            return redirect("/managegoals")
-        goalId = request.form.get("task_id")
-        timeNow = datetime.now()
+def addgoal():
+    content = request.get_json()
+    newGoal = content["newgoal"]
+    add_goal(session["user_id"], newGoal)
+    return jsonify({"message":"new added"})
+
+@app.route("/goalaction", methods=["GET", "POST"])
+@login_required
+def goalaction():
+    content = request.get_json()
+    goalId = content["id"]
+    purpose = content["aim"]
+    timeNow = datetime.now()
+    if purpose == "start":
         db.execute("""
                 UPDATE goals SET completionStatus = ?, timeStart = ? WHERE goal_id = ?
                 """, "IN PROGRESS", timeNow, goalId)
-    return redirect("/managegoals")
+        return jsonify({"status":"started"})
 
-
-@app.route("/endgoal", methods=["GET", "POST"])
-@login_required
-def endgoal():
-    if request.method == "POST":
-        endbutton = request.form.get("endbutton")
-        if not endbutton:
-            return redirect("/managegoals")
-        goalId = request.form.get("task_id")
-        timeNow = datetime.now()
+    elif purpose == "end":
         db.execute("""
-                UPDATE goals SET completionStatus = ?, timeEnd = ? WHERE goal_id = ?
-                """, "COMPLETED", timeNow, goalId)
-    return redirect("/managegoals")
+                    UPDATE goals SET completionStatus = ?, timeEnd = ? WHERE goal_id = ?
+                    """, "COMPLETED", timeNow, goalId)
+        return jsonify({"status": "ended"})
 
-@app.route("/tryagain", methods=["GET", "POST"])
-@login_required
-def tryagain():
-    if request.method == "POST":
-        redo = request.form.get("redo")
-        if not redo:
-            return redirect("/managegoals")
-        goalId = request.form.get("task_id")
+    elif purpose == "redo":
         db.execute("""
                     UPDATE goals SET completionStatus = ?, acceptanceStatus = ?, timeStart = ?, timeEnd = ? 
                     WHERE goal_id = ?
                    """, "PLANNED", "NOT ACCEPTED", 0, 0, goalId)
-    return redirect("/managegoals")
+        return jsonify({"status": "reset"})
 
-@app.route("/deletegoal", methods=["POST"])
-@login_required
-def deletegoal():
-    if request.method == "POST":
-        delete = request.form.get("delete")
-        if not delete:
-            return redirect("/managegoals")
-        goalId = request.form.get("task_id")
+    elif purpose == "delete":
         db.execute("""
                     DELETE FROM goals WHERE goal_id = ?
                    """, goalId)
-    return redirect("/managegoals")
+        return jsonify({"status": "deleted"})
+    else:
+        return jsonify({"status":"action not taken"})
 
 @app.route("/findpartner")
 @login_required

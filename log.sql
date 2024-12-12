@@ -1,6 +1,4 @@
 '''record of tables used for this project!'''
-
-
 CREATE TABLE accounts (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     username TEXT NOT NULL,
