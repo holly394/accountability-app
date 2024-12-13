@@ -72,53 +72,56 @@ async function buttonAccept() {
     let actionButton = this;
     let partnerId = actionButton.getAttribute('value');
 
-    let response = await fetch('/acceptpartnershiprequest-json', {
+    let response = await fetch('/answerpartnerrequest', {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
                     "id": partnerId,
+                    "answer": "accept"
                 })
     });
 
     let serverJson = await response.json();
     actionButton.innerHTML = serverJson.message;
     actionButton.disabled = true;
-    document.querySelector(".deny-partner-action").remove()
+    window.location.replace(window.location.href);
     }
 
 async function buttonDeny() {
     let actionButton = this;
     let partnerId = actionButton.getAttribute('value');
 
-    let response = await fetch('/denypartnershiprequest-json', {
+    let response = await fetch('/answerpartnerrequest', {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
                     "id": partnerId,
+                    "answer": "deny"
                 })
     });
 
     let serverJson = await response.json();
     actionButton.innerHTML = serverJson.message;
     actionButton.disabled = true;
-    document.querySelector(".accept-partner-action").remove()
+    window.location.replace(window.location.href);
     }
 
 async function buttonUndo() {
     let actionButton = this;
     let partnerId = actionButton.getAttribute('value');
 
-    let response = await fetch('/undopartnershipdenial-json', {
+    let response = await fetch('/answerpartnerrequest', {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
                     "id": partnerId,
+                    "answer": "undo"
                 })
     });
 

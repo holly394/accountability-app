@@ -38,4 +38,4 @@ CREATE TABLE wishlist (
     FOREIGN KEY (user_id) REFERENCES accounts(id)
 );
 
-SELECT * FROM goals;
+### wishStatus can be LISTED or PURCHASED

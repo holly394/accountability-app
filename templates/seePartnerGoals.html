@@ -6,6 +6,9 @@ See goals of your partners
 
 {% block main %}
 
+<script src="/static/timefunctions.js"></script>
+<script src="/static/acceptgoals.js"></script>
+
 <table class = "table">
     <thead>
         <tr>
@@ -17,42 +20,9 @@ See goals of your partners
             <th scope="col">Acceptance status</th>
             <th scope="col">Action</th>
             <th scope="col">Action</th>
-
         </tr>
     </thead>
-    <tbody>
-        <tr>
-            {% set count = namespace(c=0) %}
-            {% for goal in fullGoalList %}
-                <tr>
-                {% set count.c = count.c + 1 %}
-                <td>{{ count.c }}</td>
-                <td>{{ goal.user_id | find_username }}</td>
-                <td>{{ goal.goalDescription }}</td>
-                <td>{{ goal.completionStatus }}</td>
-                    {% if goal.completionStatus == "COMPLETED" %}
-                        <td>{{ goal.goal_id | timediff }}</td>
-                    {% else %}
-                        <td></td>
-                    {% endif %}
-                <td>{{ goal.acceptanceStatus }}</td>
-                    {% if goal.acceptanceStatus == "NOT ACCEPTED" and goal.completionStatus == "COMPLETED" %}
-                    <td><form action="/acceptpartnergoals" method="post">
-                        <input type="hidden" id="goal_id" name="goal_id" value="{{goal.goal_id }}"/>
-                        <input type="submit" id="accept_goal" name="accept_goal" value="Accept?"/>
-                    </form></td>
-                    <td><form action="/rejectpartnergoals" method="post">
-                        <input type="hidden" id="goal_id" name="goal_id" value="{{ goal.goal_id }}"/>
-                        <input type="submit" id="reject_goal" name="reject_goal" value="Reject?"/>
-                    </form></td>
-                    {% else %}
-                        <td>None</td>
-                        <td>None</td>
-                    {% endif %}
-                </tr>
-            {% endfor %}
-        </tr>
-    </tbody>
+    <tbody class="partnerGoalList"></tbody>
 </table>
 
 {% endblock %}

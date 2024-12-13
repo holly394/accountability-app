@@ -8,8 +8,8 @@ from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from helpers import apology, login_required, find_username, find_idNumber
-from wallets import find_wallet, str_dec_comma, total_income
-from timecalc import timediff, time_pending
+from wallets import str_dec_comma, total_purchase_history, find_wallet, all_approved_task_ids
+from timecalc import timediff, time_pending, timediffinHours
 from goals import find_goals, add_goal
 from partners import accepted_partner_list, requested_partners, acceptee_partners, search_by_username, search_requester_acceptee, partner_message
 from datetime import datetime
@@ -21,7 +21,6 @@ app = Flask(__name__)
 app.jinja_env.filters["find_username"] = find_username
 app.jinja_env.filters["timediff"] = timediff
 app.jinja_env.filters["time_pending"] = time_pending
-app.jinja_env.filters["total_income"] = total_income
 app.jinja_env.filters["find_wallet"] = find_wallet
 
 # Configure session to use filesystem (instead of signed cookies)
@@ -108,10 +107,10 @@ def register():
         return redirect("/login")
     return render_template("register.html")
 
-@app.route("/makegoal")
+@app.route("/maingoalpage")
 @login_required
 def makegoal():
-    return render_template("makegoal.html")
+    return render_template("maingoalpage.html")
 
 @app.route("/mygoals-json")
 @login_required
@@ -229,124 +228,146 @@ def accepteepartnerlistjson():
     toAcceptPartnerships = acceptee_partners(session["user_id"])
     return jsonify(toAcceptPartnerships)
 
-@app.route("/acceptpartnershiprequest-json", methods=["POST"])
+@app.route("/answerpartnerrequest", methods=["POST", ])
 @login_required
-def acceptpartnershiprequestjson():
+def answerpartnerrequest():
     response = request.get_json()
-    acceptRequest = response["id"]
-    if not acceptRequest:
-        return redirect("/partnerlist")
-    db.execute("""
-                UPDATE partnerships SET status = ? WHERE requester = ? AND acceptee = ?
-                """, "ACCEPTED", acceptRequest, session["user_id"])
-    return jsonify({
-        "message": "Accepted partnership."
-    })
-@app.route("/denypartnershiprequest-json", methods=["GET", "POST"])
-@login_required
-def denypartnershiprequestjson():
-    response = request.get_json()
-    denyRequest = response["id"]
-    if not denyRequest:
-        return redirect("/partnerlist")
-    db.execute("""
-                UPDATE partnerships SET status = ? WHERE requester = ? AND acceptee = ?
-                """, "DENIED", denyRequest, session["user_id"])
-    return jsonify({
-        "message": "Denied partnership."
-    })
+    requester = response["id"]
+    answer = response["answer"]
 
-@app.route("/undopartnershipdenial-json", methods=["GET", "POST"])
-@login_required
-def undopartnershipdenialjson():
-    response = request.get_json()
-    undoDenial = response["id"]
-    if not undoDenial:
-        return redirect("/partnerlist")
-    db.execute("""
-                DELETE FROM partnerships WHERE requester = ? AND acceptee = ?
-               """, undoDenial, session["user_id"])
-    return jsonify({
-        "message": "Erased denial."
-    })
+    if answer == "accept":
+        db.execute("""
+                    UPDATE partnerships SET status = ? WHERE requester = ? AND acceptee = ?
+                    """, "ACCEPTED", requester, session["user_id"])
+        return jsonify({
+            "message": "Accepted partnership."
+        })
+    elif answer == "deny":
+        db.execute("""
+                    UPDATE partnerships SET status = ? WHERE requester = ? AND acceptee = ?
+                    """, "DENIED", requester, session["user_id"])
+        return jsonify({
+            "message": "Denied partnership."
+        })
+    elif answer == "undo":
+        db.execute("""
+                    DELETE FROM partnerships WHERE requester = ? AND acceptee = ?
+                   """, requester, session["user_id"])
+        return jsonify({
+            "message": "Undid denial."
+        })
+    else:
+        return jsonify({
+            "message": "No action taken."
+        })
 
-@app.route("/seePartnerGoals", methods=["GET", "POST"])
+@app.route("/seePartnerGoals-json", methods=["GET", "POST"])
 @login_required
-def seePartnerGoals():
+def seePartnerGoalsjson():
     # find partners
     partnerList = accepted_partner_list(session["user_id"])
     # make list of goals from accepted partners
     fullGoalList=[]
-    # timetaken is in seconds!
-    goalList = db.execute("""
+    goals = db.execute("""
                         SELECT * FROM goals
+                        JOIN accounts ON goals.user_id=accounts.id
                         """)
-    for partner in partnerList:
-        for goal in goalList:
-            if partner == goal["user_id"]:
+    for goal in goals:
+        goaluserid = goal["user_id"]
+        for partner in partnerList:
+            if partner == goaluserid:
                 fullGoalList.append(goal)
-                continue
-    return render_template("seePartnerGoals.html", fullGoalList = fullGoalList)
+    return jsonify(fullGoalList)
 
-@app.route("/acceptpartnergoals", methods=["GET","POST"])
+@app.route("/seePartnerGoals")
 @login_required
-def acceptpartnergoals():
-    if request.method == "POST":
-        goalId = request.form.get("goal_id")
+def seePartnerGoals():
+    return render_template("seePartnerGoals.html")
+
+@app.route("/partnergoalaction", methods=["GET", "POST"])
+@login_required
+def partnergoalaction():
+    content = request.get_json()
+    goalId = content["id"]
+    purpose = content["aim"]
+    if purpose == "accept":
+        #update goal status
         db.execute("""
                     UPDATE goals SET acceptanceStatus = ? WHERE goal_id = ?
                    """, "ACCEPTED", goalId)
-    return redirect("/seePartnerGoals")
-
-
-@app.route("/rejectpartnergoals", methods=["GET", "POST"])
-@login_required
-def rejectpartnergoals():
-    if request.method == "POST":
-        goalId = request.form.get("goal_id")
+        #update partner's wallet
+        partnerid = db.execute("""
+                    SELECT user_id FROM goals WHERE goal_id = ?
+                   """,goalId)
+        totalincome = 0
+        allApprovedTaskList = all_approved_task_ids(partnerid)
+        for task in allApprovedTaskList:
+            workHours = timediffinHours(task)
+            income = workHours * 12.5
+            totalincome = totalincome + income
+        totalpurchases = total_purchase_history(partnerid)
+        wallet = totalincome - totalpurchases
+        db.execute("""
+                        UPDATE accounts SET wallet = ? WHERE id = ?
+                       """, wallet, partnerid)
+        return jsonify({"status":"accepted"})
+    elif purpose == "reject":
         db.execute("""
                     UPDATE goals SET acceptanceStatus = ? WHERE goal_id = ?
                    """, "REJECTED", goalId)
-    return redirect("/seePartnerGoals")
-
-@app.route("/wallet", methods=["GET", "POST"])
-@login_required
-def wallet():
-    """See how much you've made so far"""
-    sumWallet=0
-
-    userGoals = db.execute("""
-                SELECT goal_id,
-                (julianday(timeEnd) - julianday(timeStart)) AS daysTaken
-                FROM goals WHERE user_id = ? AND acceptanceStatus = "ACCEPTED"
-               """, session["user_id"])
-
-    for goal in userGoals:
-        days = goal["daysTaken"]
-        income = total_income(days)
-        sumWallet = sumWallet + income
-
-    sumWallet = round(sumWallet, 2)
-
-    db.execute("""
-                UPDATE accounts SET wallet = ? WHERE id = ?
-               """, sumWallet, session["user_id"])
-
-    #change . to , for euro format
-    wallet = str_dec_comma(sumWallet)
-    return render_template("wallet.html", wallet = wallet)
-
-@app.route("/seewallets")
-@login_required
-def see_wallets():
-    partnerList = accepted_partner_list(session["user_id"])
-    return render_template("seewallets.html", partnerList = partnerList)
+        return jsonify({"status":"rejected"})
+    else:
+        return jsonify({"status":"action not taken"})
 
 @app.route("/wishlist")
 @login_required
+def wishlist():
+    return render_template("wishlist.html")
+
+@app.route("/wishlist-json", methods=["GET", "POST"])
+@login_required
+def wishlist_json():
+    FullWishList = []
+    wishes = db.execute("""
+                SELECT * FROM wishlist 
+                JOIN accounts ON wishlist.user_id=accounts.id
+                """)
+    for wish in wishes:
+        wishUserID = wish["user_id"]
+        if wishUserID == session["user_id"]:
+            FullWishList.append(wish)
+    return jsonify(FullWishList)
+
+@app.route("/purchaseitem", methods=["GET", "POST"])
+@login_required
+def purchaseitem():
+    content = request.get_json()
+    wishId = content["id"]
+    db.execute("""
+                 UPDATE wishlist SET wishStatus = ? WHERE wish_id = ?
+                  """, "PURCHASED", wishId)
+    totalincome = 0
+    allApprovedTaskList = all_approved_task_ids(session["user_id"])
+
+    for task in allApprovedTaskList:
+        workHours = timediffinHours(task)
+        income = workHours*12.5
+        totalincome = totalincome + income
+
+    totalpurchases = total_purchase_history(session["user_id"])
+    wallet = totalincome - totalpurchases
+    db.execute("""
+                    UPDATE accounts SET wallet = ? WHERE id = ?
+                   """, wallet, session["user_id"])
+    return jsonify({"message":"item purchased"})
+
+
+@app.route("/wishlistother")
+@login_required
 def your_wishlist():
     wishes = db.execute("""
-                SELECT * FROM wishlist WHERE user_id = ?
+                SELECT * FROM wishlist 
+                WHERE user_id = ?
                 """, session["user_id"])
     wallet = find_wallet(session["user_id"])
     return render_template("wishlist.html", wishes = wishes, wallet = wallet)
@@ -354,6 +375,18 @@ def your_wishlist():
 @app.route("/addwish", methods=["GET", "POST"])
 @login_required
 def addwish():
+    content = request.get_json()
+    wishItem = content["item"]
+    wishPrice = content["price"]
+    db.execute("""
+                INSERT INTO wishlist (user_id, wishDescription, price, wishStatus)
+               VALUES (?, ?, ?, ?)
+               """, session["user_id"], wishItem, wishPrice, "LISTED")
+    return jsonify({"message":"new wish added"})
+
+@app.route("/addwishother", methods=["GET", "POST"])
+@login_required
+def addwishother():
     if request.method == "POST":
         newWish = request.form.get("newWish")
         wishPrice = request.form.get("wishprice")
@@ -368,9 +401,9 @@ def addwish():
         return redirect("/wishlist")
     return redirect("/wishlist")
 
-@app.route("/purchaseitem", methods=["GET", "POST"])
+@app.route("/purchaseitemother", methods=["GET", "POST"])
 @login_required
-def purchaseitem():
+def purchaseitemother():
     if request.method == "POST":
         wishId = request.form.get("wishId")
         wishPrice = request.form.get("wishPrice")
@@ -385,4 +418,11 @@ def purchaseitem():
     return redirect("/wishlist")
 
 
-
+@app.route("/seewallets")
+@login_required
+def see_wallets():
+    partnerList = accepted_partner_list(session["user_id"])
+    myWallet = find_wallet(session["user_id"])
+    # change . to , for euro format
+    wallet = str_dec_comma(myWallet)
+    return render_template("seewallets.html", partnerList=partnerList, wallet=wallet)

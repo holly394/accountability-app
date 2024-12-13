@@ -1,9 +1,9 @@
 from cs50 import SQL
 
+db = SQL("sqlite:///projectdata.db")
 #give value of (completed) goal id to get time difference for python calculations
 #returns a dictionary!!
 def timediff(value):
-    db = SQL("sqlite:///projectdata.db")
     timeEnd = db.execute("""SELECT julianday(timeEnd, 'localtime') AS end FROM goals WHERE goal_id = ?
                               """, value)
     timeStart = db.execute("""SELECT julianday(timeStart, 'localtime') AS start FROM goals WHERE goal_id = ?
@@ -27,10 +27,22 @@ def timediff(value):
     timeDiff = {'days': daysInt, 'hours': hoursInt, 'minutes': minutesInt}
     return timeDiff
 
-def time_pending(value):
+def timediffinHours(id):
+    timeEnd = db.execute("""SELECT julianday(timeEnd, 'localtime') AS end FROM goals WHERE goal_id = ?
+                               """, id)
+    timeStart = db.execute("""SELECT julianday(timeStart, 'localtime') AS start FROM goals WHERE goal_id = ?
+                             """, id)
+    End = timeEnd[0]["end"]
+    Start = timeStart[0]["start"]
+    timeinDays = End - Start
+    timeinHours = timeinDays*24
+    timeinHours = int(timeinHours)
+    return timeinHours
+
+def time_pending(goalid):
     db = SQL("sqlite:///projectdata.db")
     timeDifference = db.execute("""SELECT (julianday('now', 'localtime') - julianday(timeStart)) AS difference FROM goals WHERE goal_id = ?
-                            """, value)
+                            """, goalid)
     findTimediff = timeDifference[0]["difference"]
     daysInt = int(findTimediff)
 
