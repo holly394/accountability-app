@@ -1,17 +1,13 @@
-import os
-from xml.etree.ElementTree import tostring
-
 from cs50 import SQL
-import sqlite3
-from flask import Flask, flash, redirect, render_template, request, session, jsonify
+from flask import Flask, redirect, render_template, request, session, jsonify
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import apology, login_required, find_username, find_idNumber
+from helpers import apology, login_required, find_username
 from wallets import str_dec_comma, total_purchase_history, find_wallet, all_approved_task_ids
 from timecalc import timediff, time_pending, timediffinHours
 from goals import find_goals, add_goal
-from partners import accepted_partner_list, requested_partners, acceptee_partners, search_by_username, search_requester_acceptee, partner_message
+from partners import accepted_partner_list, requested_partners, acceptee_partners, search_requester_acceptee, partner_message
 from datetime import datetime
 
 # Configure application
@@ -299,8 +295,9 @@ def partnergoalaction():
         partnerid = db.execute("""
                     SELECT user_id FROM goals WHERE goal_id = ?
                    """,goalId)
+        partneridnumber = partnerid["user_id"]
         totalincome = 0
-        allApprovedTaskList = all_approved_task_ids(partnerid)
+        allApprovedTaskList = all_approved_task_ids(partneridnumber)
         for task in allApprovedTaskList:
             workHours = timediffinHours(task)
             income = workHours * 12.5

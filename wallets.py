@@ -15,6 +15,7 @@ def all_approved_task_ids(userid):
     for task in approvedTaskIds:
         taskid = task["goal_id"]
         finalTaskList.append(taskid)
+
     return finalTaskList
 
 def total_purchase_history(userid):
