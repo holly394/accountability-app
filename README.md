@@ -82,8 +82,8 @@ javascript files `acceptgoals.js`, `goals.js`, `partnerlistnew.js`, `timefunctio
 ### In /templates directory: html files
 
 #### findpartner.html: 
-This has input for searching for users to request a partnership with and script that connects to 
-javascript file `static/findpartner.js`.
+This page is where a user can find other users of the app by searching their usernames. This has input for searching 
+for users to request a partnership with and script that connects to javascript file `static/findpartner.js`.
 
 ##### findpartner.js: 
 This has an event listener for the input that fetches json data from `app.py("/searchpartner")` to find matching 
@@ -92,7 +92,8 @@ has an event listener function for the buttons that fetch json data from `app.py
 partnership can be requested, added to the database, and receive a response message for each relationship.
 
 #### partnerlist.html: 
-This has a table and script that connects to file `/static/partnerlistnew.js`.
+This page is where the user can see the status of their partnerships. This has a table and script that connects 
+to file `/static/partnerlistnew.js`.
 
 ##### partnerlistnew.js: 
 This fetches json data from `app.py("/requestedpartnerlist-json")` and `app.py("/acceptedpartnerlist-json")`. It 
@@ -105,9 +106,9 @@ to take. Based on this, it will return the right message that will replace the m
 the button once selected. 
   
 #### seepartnergoals.html: 
-This has a table and 2 scripts. One script for calling time functions from `"/static/timefunctions.js"` and 
-another connecting to `"/static/acceptgoals.js"`. This page allows the user to see the goals of their 
-accepted partners.
+This page allows the user to see the goals of their accepted partners. This has a table and 2 scripts. 
+One script for calling time functions from `"/static/timefunctions.js"` and another connecting to 
+`"/static/acceptgoals.js"`. 
 
 ##### timefunctions.js: 
 This has a function for calculating the time difference based on inserted start and end time. There is also another 
@@ -120,9 +121,9 @@ goal of their partners. These buttons are connected to functions that sends and 
 `app.py("/partnergoalaction")`. It sends the id of the goal as well as which action to take for each goal.
 
 #### maingoalpage.html: 
-This has a table and 2 scripts, one script for calling time functions from `"/static/timefunctions.js"` 
-and another connecting to `"/static/goals.js"`. This page shows a table of the current 
-user's goals. it also has an input and button for adding new goals.
+This page shows a table of the current user's goals. This has a table and 2 scripts, one script for calling 
+time functions from `"/static/timefunctions.js"` and another connecting to `"/static/goals.js"`.
+It also has an input and button for adding new goals.
 
 ##### timefunctions.js: 
 This has a function for calculating the time difference based on inserted start and end time. It also has another 
