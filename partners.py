@@ -1,9 +1,5 @@
-
-
 from cs50 import SQL
-
 db = SQL("sqlite:///projectdata.db")
-
 
 def accepted_partner_list(value):
     partnerList = []

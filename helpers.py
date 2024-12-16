@@ -2,6 +2,8 @@ from cs50 import SQL
 from flask import redirect, render_template, session
 from functools import wraps
 
+db = SQL("sqlite:///projectdata.db")
+
 def apology(message, code=400):
     """Render message as an apology to user."""
 
@@ -41,7 +43,6 @@ def login_required(f):
     return decorated_function
 
 def find_username(value):
-    db = SQL("sqlite:///projectdata.db")
     names = db.execute("""
                         SELECT username FROM accounts WHERE id=?
                           """, value)
@@ -51,7 +52,6 @@ def find_username(value):
     return person
 
 def find_idNumber(f):
-    db = SQL("sqlite:///projectdata.db")
     idNumbers = db.execute("""
                             SELECT id FROM accounts WHERE username = ?
                             """, f)
@@ -59,3 +59,16 @@ def find_idNumber(f):
     for account in idNumbers:
         number = account["id"]
     return number
+
+def find_goals(value):
+    goalList = db.execute("""
+                        SELECT * FROM goals WHERE user_id = ?
+                          """, value)
+    return goalList
+
+def add_goal(id, goal):
+    db.execute("""
+                INSERT INTO goals (user_id, goalDescription, completionStatus, acceptanceStatus, timeStart, timeEnd)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """, id, goal, "PLANNED", "NOT ACCEPTED", 0, 0)
+    return True
