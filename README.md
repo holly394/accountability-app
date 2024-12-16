@@ -1,6 +1,16 @@
-# YOUR PROJECT TITLE
+# Accountability App
 ### Video Demo:  <URL HERE>
-### Description:
+### Description: 
+This app was designed to help keep yourself and your friends hold each other accountable for goals you 
+want to reach by keeping track of each other's goals and adding a competitive element to it. For each goal that
+you set as complete, it must be accepted by one of your partners in the app in order to be fully approved. Once 
+your goal is approved, the time taken to complete the goal is calculated by the minimum wage and added to your wallet. 
+Each user has their own wallet as well as a wishlist of items that they would like to purchase. If you "earn" enough
+with each completed and approved task, you can purchase an item on your wishlist. Completed goals can also be rejected
+by partners if they believe that the time taken to complete the goal seems unrealistic or if they know you haven't 
+actually completed the goal, and you have the choice to try taking on the goal again. 
+For partnership requests, you can send a request by searching for an existing username. You can also choose to reject 
+a request as well as undo a rejection if it was a mistake or if you change your mind. 
 #### Dockerfile and docker-compose-dev.yaml: 
 The dockerfile gets the python interpreter to read the **requirements.txt** file to get the needed 
 requirements listed there to make a copy of the right container type where the app can run when the flask run 
