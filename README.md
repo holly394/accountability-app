@@ -36,7 +36,7 @@ and password information. `register.html` has a form for registering a new user 
 correctly entered both times
 
 #### home.html: 
-This is an introductory page accessible to both registered and non-registered people. This also extends **layout.html**.
+This is an introductory page accessible to both registered and non-registered people. This also extends `layout.html`.
 
 ### app.py and helpers.py, partners.py, timecalc.py, wallet.py
 
@@ -57,13 +57,9 @@ Here, there are functions that will find a user's partners (this would mean that
 been accepted). To differentiate between who has requested and who has answered the request (accept or deny), 
 there are two functions that will provide two different lists of partnerships. One list is where the user is 
 the requester and another is where the user is the acceptee. 
-As well, there are functions to help find account information by username, partnership information by requester 
+As well, there are helper methods to help find account information by username, partnership information by requester 
 and acceptee user id numbers, and printing the right messages for when a user requests a partnership with 
 another user.
-
-Here, there are functions that will find a user's existing relationships.
-Since relationships are bi-directional, both relationships (being requester and acceptee) are handled.
-It also includes general helper methods for account info lookup and formatting response messages for relationships.
 
 #### timecalc.py: 
 This contains functions to help calculate the time taken for a goal based on the goal id. One function is for 
@@ -81,36 +77,36 @@ This is the sqlite3 database and a file to store schema to easily look back to w
 ### In /static directory: javascript files
 This directory has some files from the CS50 finance project (such as fav icon, I-heart-validator, styles.css).
 Alongside it, it has pictures for the home page (2 jpg files that are freely accessible stock photo images) and 
-javascript files **acceptgoals.js**, **goals.js**, **partnerlistnew.js**, **timefunctions.js**, and **wishlist.js**.
+javascript files `acceptgoals.js`, `goals.js`, `partnerlistnew.js`, `timefunctions.js`, and `wishlist.js`.
 
 ### In /templates directory: html files
 
 #### findpartner.html: 
 This has input for searching for users to request a partnership with and script that connects to 
-javascript file **"static/findpartner.js"**.
+javascript file `static/findpartner.js`.
 
 ##### findpartner.js: 
-This has an event listener for the input that fetches json data from **app.py("/searchpartner")** to find matching 
-usernames to search result and inserts a button with class ("add-partner-action") for each search result. It also 
-has an event listener function for the buttons that fetch json data from **app.py("/addpartner-json")** to see if 
+This has an event listener for the input that fetches json data from `app.py("/searchpartner")` to find matching 
+usernames to search result and inserts a button with class `add-partner-action` for each search result. It also 
+has an event listener function for the buttons that fetch json data from `app.py("/addpartner-json")` to see if 
 partnership can be requested, added to the database, and receive a response message for each relationship.
 
 #### partnerlist.html: 
-This has a table and script that connects to file "**/static/partnerlistnew.js"**.
+This has a table and script that connects to file `/static/partnerlistnew.js`.
 
 ##### partnerlistnew.js: 
-This fetches json data from **app.py("/requestedpartnerlist-json")** and **app.py("/acceptedpartnerlist-json")**. It 
+This fetches json data from `app.py("/requestedpartnerlist-json")` and `app.py("/acceptedpartnerlist-json")`. It 
 makes a table that automatically updates the current user's partnerships (for all cases: requested, to respond, 
 denied, accepted). There are buttons created based on the status of the partnership. Based on the status, the 
 user has the option to either accept or deny a request for partnership they receive from another user. They 
 also have the option to undo the status of a partnership that they've previously denied. These buttons are 
-connected to **app.py("/answerpartnerrequest")** that sends the user id of the partnership and which action 
+connected to `app.py("/answerpartnerrequest")` that sends the user id of the partnership and which action 
 to take. Based on this, it will return the right message that will replace the message inside the button and disable 
 the button once selected. 
   
 #### seepartnergoals.html: 
-This has a table and 2 scripts. One script for calling time functions from **"/static/timefunctions.js"** and 
-another connecting to **"/static/acceptgoals.js"**. This page allows the user to see the goals of their 
+This has a table and 2 scripts. One script for calling time functions from `"/static/timefunctions.js"` and 
+another connecting to `"/static/acceptgoals.js"`. This page allows the user to see the goals of their 
 accepted partners.
 
 ##### timefunctions.js: 
@@ -121,11 +117,11 @@ function for calculating the time difference from start time and current time.
 This updates the table of user's partners' goals. Based on the completion status of each goal, it 
 shows the time taken for each goal (in progress or completed). The user can also choose to accept or deny a completed 
 goal of their partners. These buttons are connected to functions that sends and fetches json data to and from 
-**app.py("/partnergoalaction")**. it sends the id of the goal as well as which action to take for each goal.
+`app.py("/partnergoalaction")`. It sends the id of the goal as well as which action to take for each goal.
 
 #### maingoalpage.html: 
-This has a table and 2 scripts, one script for calling time functions from **"/static/timefunctions.js"** 
-and another connecting to **"/static/goals.js"**. This page shows a table of the current 
+This has a table and 2 scripts, one script for calling time functions from `"/static/timefunctions.js"` 
+and another connecting to `"/static/goals.js"`. This page shows a table of the current 
 user's goals. it also has an input and button for adding new goals.
 
 ##### timefunctions.js: 
@@ -135,28 +131,28 @@ function for calculating the time difference from start time and current time.
 ##### goals.js: 
 Based on the completion status, a button with either a start or finish button are available. This will 
 set a start or end time for the chosen goal as well as show the time difference for started and completed goals. 
-There are also buttons for deleting a goal or redoing a goal that had been rejected by a partner. The NewGoalAdd()
-function sends data in JSON format to **app.py("/addgoal")** to add a new goal from the input section of the site. The other 
-button functions sends data in JSON format to **app.py("/goalaction")** which sends the goal id and the action to take 
+There are also buttons for deleting a goal or redoing a goal that had been rejected by a partner. The `NewGoalAdd()`
+function sends data in JSON format to `app.py("/addgoal")` to add a new goal from the input section of the site. The other 
+button functions sends data in JSON format to `app.py("/goalaction")` which sends the goal id and the action to take 
 for the chosen goal.
 
 #### seewallets.html: 
 This page has a table showing the user's partners' wallets alongside the user's own wallet. This information is 
-simply updated using jinja and jinja environment functions defined in **helpers.py** (`find_username` and `find_wallet`).
+simply updated using jinja and jinja environment functions defined in `helpers.py` (`find_username` and `find_wallet`).
 
 #### wishlist.html: 
 This page has a table showing a list of items in the current user's wishlist and their corresponding 
-prices, a script connecting to **"/static/wishlist.js"**, and 2 inputs and one button for adding new items and their 
+prices, a script connecting to `"/static/wishlist.js"`, and 2 inputs and one button for adding new items and their 
 prices to the current user's wishlist.
 
 ##### wishlist.js: 
 This updates the wishlist table with the current items on the user's wishlist by getting data with a requested 
-to **app.py("/wishlist-json")**. Depending on the current user's wallet value, it will provide a button next
+to `app.py("/wishlist-json")`. Depending on the current user's wallet value, it will provide a button next
 to each item for purchasing an item. If the wallet value is lower than the price of the item, it will show a message
-saying that there are not enough funds. For the purchase button, there is a function buttonPurchase() that sends 
-the item id to **app.py("/purchaseitem")** and updates the wishlist table in the database as well as the user's wallet 
-value. There is also a function NewWishAdd() that sends information from the input fields (description and price) for a 
-newly added item when the add button is clicked. this information is sent to **app.py("/addwish")** and inserts 
+saying that there are not enough funds. For the purchase button, there is a function `buttonPurchase()` that sends 
+the item id to `app.py("/purchaseitem")` and updates the wishlist table in the database as well as the user's wallet 
+value. There is also a function `NewWishAdd()` that sends information from the input fields (description and price) for a 
+newly added item when the add button is clicked. this information is sent to `app.py("/addwish")` and inserts 
 information on the new item to the wishlist database.
 
 
