@@ -24,16 +24,14 @@ Then, `docker-compose.yml` is run to build the image described in the Dockerfile
 which port it is run in. When changes are pushed to GitHub, GitHub Actions for building Docker images are used to 
 build a new version of that image, so anyone who wishes to do so may spin up a container.
 
-#### layout.html and apology.html: 
-These are mostly taken from the CS50 finance project. **layout.html** is where we can make the navigation bar 
-so users can navigate between different pages. The apology page **apology.html** uses jinja to extend 
-**layout.html** and inserts code into specific blocks.
-
-#### login.html and register.html: 
+#### layout.html, apology.html, login.html and register.html: 
+I created this app using some files that were used in the CS50 finance problem set as a base and built on top of those. 
+As such, `layout.html` is where we can make the navigation bar so users can navigate between different pages. 
+Similarly, the apology page `apology.html` uses Jinja to extend `layout.html` and inserts code into specific blocks.
 `login.html` has a form for login that connects to `app.py("/login")` with a post request checking the user id 
 and password information. `register.html` has a form for registering a new user which connects to 
 `app.py("/register")` with a post request inserting the new user data and checking that the password is
-correctly entered both times
+correctly entered both times.
 
 #### home.html: 
 This is an introductory page accessible to both registered and non-registered people. This also extends `layout.html`.
