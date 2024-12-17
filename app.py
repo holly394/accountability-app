@@ -345,7 +345,7 @@ def purchaseitem():
     item_price = db.execute("""
                      SELECT * FROM wishlist WHERE wish_id = ?
                       """, wish_id)
-    price = item_price["price"]
+    price = item_price[0]["price"]
 
     add_action = add_transaction(session["user_id"], price, "wishPurchase")
     if add_action:
@@ -371,6 +371,10 @@ def addwish():
 @app.route("/seewallets")
 @login_required
 def see_wallets():
+    update = transactions_total(session["user_id"])
     partner_list = accepted_partner_list(session["user_id"])
+    if update:
+        my_wallet = find_wallet(session["user_id"])
+        return render_template("seewallets.html", partnerList=partner_list, wallet=my_wallet)
     my_wallet = find_wallet(session["user_id"])
     return render_template("seewallets.html", partnerList=partner_list, wallet=my_wallet)

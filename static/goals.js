@@ -60,11 +60,14 @@ document.addEventListener("DOMContentLoaded", async function(){
                                 + completetimediff.minutes + " minutes";
                 }
                 //delete task button
-                deleteTaskButton = document.createElement("button");
-                goalRow.appendChild(document.createElement("td")).appendChild(deleteTaskButton);
-                deleteTaskButton.setAttribute("value", goal.goal_id);
-                deleteTaskButton.addEventListener("click", buttonDelete);
-                deleteTaskButton.textContent = "Delete task?";
+                if (goal.acceptanceStatus != "ACCEPTED") {
+                    deleteTaskButton = document.createElement("button");
+                    goalRow.appendChild(document.createElement("td")).appendChild(deleteTaskButton);
+                    deleteTaskButton.setAttribute("value", goal.goal_id);
+                    deleteTaskButton.addEventListener("click", buttonDelete);
+                    deleteTaskButton.textContent = "Delete task?";
+                }
+
                 //add everything into the row
                 myGoalListHTML.appendChild(goalRow);
                 countGoals++;

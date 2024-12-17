@@ -26,7 +26,7 @@ def transactions_total(userid):
     #if no earnings, return 1 because everyone starts with 1 euro in their wallets
     if not earning:
         return 1
-    transactionAll = earning - spending + 1
+    transactionAll = earning - spending
     return transactionAll
 
 def add_transaction(userid, value, type):
@@ -44,4 +44,3 @@ def add_transaction(userid, value, type):
                    """, userid, value, "EARNING", time_now)
         return True
     return False
-

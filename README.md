@@ -19,7 +19,7 @@ information such as id, username, password, as well as the amount stored in thei
 table keeps track of partnerships between two users at a time as well as the status of their relationship
 ("ACCEPTED", "REQUESTED", "DENIED"). The goals table keeps track of individual goals, times of when each goal
 starts and ends, which user this goal belongs to as well as the completion status ("PLANNED", "IN PROGRESS", "COMPLETED")
-and acceptance status ("ACCEPTED", "REJECTED") of each goal. The wishlist table keeps track of each item added to 
+and acceptance status ("ACCEPTED", "NOT ACCEPTED") of each goal. The wishlist table keeps track of each item added to 
 a wishlist, which user it belongs to, the price of the item, and the status of each item ("PURCHASED", "LISTED").
 The transactions table keeps track of actions taken that affect users' wallets with a unique transaction id, the 
 amount earned or spent, which user this action belongs to, the type of action ("EARNING", "SPENDING"), as well as

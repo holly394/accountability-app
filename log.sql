@@ -47,5 +47,9 @@ CREATE TABLE transactions (
     FOREIGN KEY (user_id) REFERENCES accounts(id)
 );
 
-### wishStatus can be LISTED or PURCHASED
-UPDATE goals SET acceptanceStatus = 'NOT ACCEPTED' WHERE user_id = 3;
+
+/*miscellaneous commands to make testing easier*/
+SELECT * FROM goals WHERE completionStatus = 'COMPLETED' AND acceptanceStatus = 'NOT ACCEPTED';
+SELECT * FROM goals WHERE completionStatus = 'COMPLETED' AND acceptanceStatus = 'REJECTED';
+UPDATE goals SET acceptanceStatus = 'NOT ACCEPTED' WHERE user_id=4;
+UPDATE partnerships SET status = 'REQUESTED' WHERE acceptee = 3;

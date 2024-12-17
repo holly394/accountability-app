@@ -64,7 +64,7 @@ async function NewWishAdd() {
     if (price == "") {
         alert("Must enter a price");
         return false;
-    } else if (isNaN(price.NaN)) {
+    } else if (isNaN(price)) {
         alert("Not a number");
         return false;
     }
