@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", async function(){
                 wishRow.appendChild(document.createElement("td")).textContent = wish.wishStatus;
 
                 //action column
-                if (wish.wallet > wish.price && wish.wishStatus == "LISTED") {
+                if ((wish.wallet >= wish.price) && wish.wishStatus == "LISTED") {
                     purchaseButton = document.createElement("button");
                     purchaseButton.setAttribute("value", wish.wish_id);
                     purchaseButton.addEventListener("click", buttonPurchase);
@@ -63,6 +63,9 @@ async function NewWishAdd() {
     }
     if (price == "") {
         alert("Must enter a price");
+        return false;
+    } else if (isNaN(price.NaN)) {
+        alert("Not a number");
         return false;
     }
 

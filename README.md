@@ -13,6 +13,17 @@ Completed goals can also be rejected by partners if they believe that the time t
 unrealistic or if they know you haven't actually completed the goal, and you have the choice to try taking on 
 the goal again. 
 
+#### Tables:
+There are 5 tables: accounts, partnerships, goals, wishlist, transactions. The accounts table keeps track of user
+information such as id, username, password, as well as the amount stored in their personal wallets. The partnership
+table keeps track of partnerships between two users at a time as well as the status of their relationship
+("ACCEPTED", "REQUESTED", "DENIED"). The goals table keeps track of individual goals, times of when each goal
+starts and ends, which user this goal belongs to as well as the completion status ("PLANNED", "IN PROGRESS", "COMPLETED")
+and acceptance status ("ACCEPTED", "REJECTED") of each goal. The wishlist table keeps track of each item added to 
+a wishlist, which user it belongs to, the price of the item, and the status of each item ("PURCHASED", "LISTED").
+The transactions table keeps track of actions taken that affect users' wallets with a unique transaction id, the 
+amount earned or spent, which user this action belongs to, the type of action ("EARNING", "SPENDING"), as well as
+a timestamp.
 
 #### Dockerfile and docker-compose-dev.yaml: 
 The Dockerfile describes how a new image is built from the common Python image for version 3.12.
@@ -65,9 +76,9 @@ completed goals and another is for if a goal is still in progress. There is also
 time difference in hours to make it easier to calculate the income received for a completed task.
 
 #### wallet.py: 
-This has functions to make numeric values match the euro currency format ("," instead of "." for cent values), 
-find a list of approved and completed tasks (tasks you can be paid for), find the total "money" spent 
-on items from wishlist, and find the current wallet value based on user id.
+This has helper functions to find the current wallet value based on user id, the total sum of a user's wallet based on
+total earnings and spending history, as well as a function to add new purchases or earnings into the transactions 
+table. 
 
 #### projectdata.db and log.sql: 
 This is the sqlite3 database and a file to store schema to easily look back to when needed.

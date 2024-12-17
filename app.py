@@ -4,7 +4,7 @@ from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from helpers import apology, login_required, find_username, find_goals, add_goal
-from wallets import str_dec_comma, total_purchase_history, find_wallet, all_approved_task_ids
+from wallets import find_wallet, transactions_total, add_transaction
 from timecalc import timediff, time_pending, timediffinHours
 from partners import accepted_partner_list, requested_partners, acceptee_partners, search_requester_acceptee, partner_message
 from datetime import datetime
@@ -290,23 +290,23 @@ def partnergoalaction():
         db.execute("""
                     UPDATE goals SET acceptanceStatus = ? WHERE goal_id = ?
                    """, "ACCEPTED", goal_id)
-        #update partner's wallet
-        partnerid = db.execute("""
+        #get partner id and hours worked on task
+        partner = db.execute("""
                     SELECT user_id FROM goals WHERE goal_id = ?
                    """,goal_id)
-        partneridnumber = partnerid["user_id"]
-        totalincome = 0
-        all_approved_task_list = all_approved_task_ids(partneridnumber)
-        for task in all_approved_task_list:
-            work_hours = timediffinHours(task)
-            income = work_hours * 12.5
-            totalincome = totalincome + income
-        totalpurchases = total_purchase_history(partnerid)
-        wallet = totalincome - totalpurchases
-        db.execute("""
-                        UPDATE accounts SET wallet = ? WHERE id = ?
-                       """, wallet, partnerid)
-        return jsonify({"status":"accepted"})
+        partnerid = partner[0]["user_id"]
+        #get number of hours and multiply by min wage
+        work_hours = timediffinHours(goal_id)
+        income = work_hours*12.5
+        #if add_transaction returns true, goal was successfully added to transactions table
+        add_action = add_transaction(partnerid, income, "goalEarnings")
+        if add_action:
+            wallet = transactions_total(partnerid)
+            db.execute("""
+                            UPDATE accounts SET wallet = ? WHERE id = ?
+                           """, wallet, partnerid)
+            return jsonify({"status":"accepted"})
+        return jsonify({"status": "action not taken"})
     elif purpose == "reject":
         db.execute("""
                     UPDATE goals SET acceptanceStatus = ? WHERE goal_id = ?
@@ -342,20 +342,19 @@ def purchaseitem():
     db.execute("""
                  UPDATE wishlist SET wishStatus = ? WHERE wish_id = ?
                   """, "PURCHASED", wish_id)
-    totalincome = 0
-    all_approved_task_list = all_approved_task_ids(session["user_id"])
+    item_price = db.execute("""
+                     SELECT * FROM wishlist WHERE wish_id = ?
+                      """, wish_id)
+    price = item_price["price"]
 
-    for task in all_approved_task_list:
-        work_hours = timediffinHours(task)
-        income = work_hours*12.5
-        totalincome = totalincome + income
-
-    totalpurchases = total_purchase_history(session["user_id"])
-    wallet = totalincome - totalpurchases
-    db.execute("""
+    add_action = add_transaction(session["user_id"], price, "wishPurchase")
+    if add_action:
+        wallet = transactions_total(session["user_id"])
+        db.execute("""
                     UPDATE accounts SET wallet = ? WHERE id = ?
                    """, wallet, session["user_id"])
-    return jsonify({"message":"item purchased"})
+        return jsonify({"message":"item purchased"})
+    return jsonify({"status": "action not taken"})
 
 @app.route("/addwish", methods=["GET", "POST"])
 @login_required
@@ -374,6 +373,4 @@ def addwish():
 def see_wallets():
     partner_list = accepted_partner_list(session["user_id"])
     my_wallet = find_wallet(session["user_id"])
-    # change . to , for euro format
-    wallet = str_dec_comma(my_wallet)
-    return render_template("seewallets.html", partnerList=partner_list, wallet=wallet)
+    return render_template("seewallets.html", partnerList=partner_list, wallet=my_wallet)

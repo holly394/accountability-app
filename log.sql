@@ -38,4 +38,14 @@ CREATE TABLE wishlist (
     FOREIGN KEY (user_id) REFERENCES accounts(id)
 );
 
+CREATE TABLE transactions (
+    transaction_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    user_id INT,
+    amount INT,
+    type TEXT NOT NULL,
+    timestamp INT,
+    FOREIGN KEY (user_id) REFERENCES accounts(id)
+);
+
 ### wishStatus can be LISTED or PURCHASED
+UPDATE goals SET acceptanceStatus = 'NOT ACCEPTED' WHERE user_id = 3;
