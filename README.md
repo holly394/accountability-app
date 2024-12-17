@@ -1,5 +1,5 @@
 # Accountability App
-### Video Demo:  <URL HERE>
+### Video Demo:  https://youtu.be/lnW_90p0vrA
 ### Description: 
 This app was designed to help keep yourself and your friends hold each other accountable for goals you 
 want to reach by keeping track of each other's goals and adding a competitive element to it. For partnership 
